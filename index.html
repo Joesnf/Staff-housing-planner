@@ -114,10 +114,10 @@ const hkPeople=new Set(["Mori","Tracy","mark","isaac","Richard","Keith","Tony"])
 const femalePeople=new Set(["Annie","Tracy","Ann","Irene","Zoey","Lina","珊","Erica","Joanna","anna"]);
 const noKadoya=new Set(["Richard"]);
 function emptyState(){const s={unassigned:[]};for(const[h,info]of Object.entries(houses)){s[h]={};for(const r of info.rooms)s[h][r.id]=[]}return s}
-function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori.M2=["Mori","Tracy"];s.Midori.M3=["Ann"];s.Midori.M4=["Sabrina"];s.Momiji.MO1=["Ray","Irene"];s.Momiji.MO2=["Ryan","鉦傑"];s.Momiji.MO3=["Niu"];s.Momiji.MO4=["Zoey"];s.Kadoya.K1=["Lina","珊"];s.Kadoya.K2=["mark"];s.Kadoya.K3=["isaac"];s.Kadoya.K4=["Erica"];s.Kadoya.K5=["Kai"];s.Yellow.Y1=["max","anna"];s.Yellow.Y2=["Tony"];s.Yellow.Y3=["Keith"];s.Yellow.Y4=["Joanna"];s.Yellow.Y5=["bill"];s.Yellow.Y6=["Richard"];return s}
+function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori.M2=["Mori","Tracy"];s.Midori.M3=["Ann"];s.Midori.M4=["Sabrina"];s.Momiji.MO1=["Ray","Irene"];s.Momiji.MO2=["Ryan","鉦傑"];s.Momiji.MO3=["Niu"];s.Momiji.MO4=["Zoey"];s.Momiji.MO5=["Lina"];s.Kadoya.K1=["珊"];s.Kadoya.K2=["mark"];s.Kadoya.K3=["isaac"];s.Kadoya.K4=["Erica"];s.Kadoya.K5=["Kai"];s.Yellow.Y1=["max","anna"];s.Yellow.Y2=["Tony"];s.Yellow.Y3=["Keith"];s.Yellow.Y4=["Joanna"];s.Yellow.Y5=["bill"];s.Yellow.Y6=["Richard"];return s}
 function makePlan2(){const s=makePlan1();s.Yellow.Y6=[];s.Momiji.MO5=["Richard"];return s}
 function makePlan3(){const s=makePlan1();s.Kadoya.K5=["bill"];s.Yellow.Y5=["Kai"];return s}
-function makePlan4(){const s=makePlan1();s.Kadoya.K1=["珊"];s.Momiji.MO5=["Lina"];return s}
+function makePlan4(){const s=makePlan1();return s}
 function makePlan5(){
   const s=makePlan1();
   const newcomers=["Ryan","鉦傑","珊","Richard"];
