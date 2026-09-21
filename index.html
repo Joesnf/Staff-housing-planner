@@ -80,8 +80,6 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
       <button onclick="loadPlan3()">方案三｜Kai → Yellow</button>
       <button onclick="loadPlan4()">方案四｜Kadoya 5 人</button>
       <button onclick="clearRooms()">全部未分配</button>
-      <button onclick="saveNow()">儲存</button>
-      <button onclick="loadSaved()">讀取</button>
     </div>
   </div>
   <div class="summary" id="summary"></div>
@@ -202,8 +200,6 @@ function loadPlan2(){selectedPerson=null;current=makePlan2();render()}
 function loadPlan3(){selectedPerson=null;current=makePlan3();render()}
 function loadPlan4(){selectedPerson=null;current=makePlan4();render()}
 function clearRooms(){selectedPerson=null;current=emptyState();current.unassigned=[...everyone];render()}
-function saveNow(){localStorage.setItem("dormCompactConfig25",JSON.stringify(current));alert("已儲存")}
-function loadSaved(){const s=localStorage.getItem("dormCompactConfig25");if(!s){alert("沒有已儲存配置");return}current=JSON.parse(s);render()}
 render();
 </script>
 </body>
