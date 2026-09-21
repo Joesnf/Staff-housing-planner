@@ -111,7 +111,7 @@ const fixedPairs={Annie:"Jason",Jason:"Annie",Mori:"Tracy",Tracy:"Mori",Ray:"Ire
 const flexiblePairPeople=new Set(["Lina","珊","Ryan","鉦傑"]);
 const everyone=["Annie","Jason","Ann","Mori","Tracy","Sabrina","Niu","Zoey","Ray","Irene","Ryan","鉦傑","mark","isaac","Erica","Kai","Lina","珊","Tony","Keith","Joanna","max","anna","bill","Richard"];
 const hkPeople=new Set(["Mori","Tracy","mark","isaac","Richard","Keith","Tony"]);
-const femalePeople=new Set(["Annie","Tracy","Ann","Irene","Zoey","Lina","珊","Erica","Joanna","anna"]);
+const femalePeople=new Set(["Annie","Tracy","Ann","Irene","Zoey","Lina","珊","Erica","Joanna","anna","Sabrina"]);
 const noKadoya=new Set(["Richard"]);
 function emptyState(){const s={unassigned:[]};for(const[h,info]of Object.entries(houses)){s[h]={};for(const r of info.rooms)s[h][r.id]=[]}return s}
 function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori.M2=["Mori","Tracy"];s.Midori.M3=["Ann"];s.Midori.M4=["Sabrina"];s.Momiji.MO1=["Ray","Irene"];s.Momiji.MO2=["Ryan","鉦傑"];s.Momiji.MO3=["Niu"];s.Momiji.MO4=["Zoey"];s.Momiji.MO5=["Lina"];s.Kadoya.K1=["珊"];s.Kadoya.K2=["mark"];s.Kadoya.K3=["isaac"];s.Kadoya.K4=["Erica"];s.Kadoya.K5=["Kai"];s.Yellow.Y1=["max","anna"];s.Yellow.Y2=["Tony"];s.Yellow.Y3=["Keith"];s.Yellow.Y4=["Joanna"];s.Yellow.Y5=["bill"];s.Yellow.Y6=["Richard"];return s}
