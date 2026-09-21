@@ -71,7 +71,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>宿舍配置總覽｜四方案</h1>
+      <h1>宿舍配置總覽｜五方案</h1>
       <div class="sub">電腦可拖拉；手機請先點人名，再點目標房間。</div>
     </div>
     <div class="toolbar">
@@ -115,7 +115,7 @@ const femalePeople=new Set(["Annie","Tracy","Ann","Irene","Zoey","Lina","珊","E
 const noKadoya=new Set(["Richard"]);
 function emptyState(){const s={unassigned:[]};for(const[h,info]of Object.entries(houses)){s[h]={};for(const r of info.rooms)s[h][r.id]=[]}return s}
 function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori.M2=["Mori","Tracy"];s.Midori.M3=["Ann"];s.Midori.M4=["Sabrina"];s.Momiji.MO1=["Ray","Irene"];s.Momiji.MO2=["Ryan","鉦傑"];s.Momiji.MO3=["Niu"];s.Momiji.MO4=["Zoey"];s.Momiji.MO5=["Lina"];s.Kadoya.K1=["珊"];s.Kadoya.K2=["mark"];s.Kadoya.K3=["isaac"];s.Kadoya.K4=["Erica"];s.Kadoya.K5=["Kai"];s.Yellow.Y1=["max","anna"];s.Yellow.Y2=["Tony"];s.Yellow.Y3=["Keith"];s.Yellow.Y4=["Joanna"];s.Yellow.Y5=["bill"];s.Yellow.Y6=["Richard"];return s}
-function makePlan2(){const s=makePlan1();s.Yellow.Y6=[];s.Momiji.MO5=["Richard"];return s}
+function makePlan2(){const s=makePlan1();s.Yellow.Y6=["Lina"];s.Momiji.MO5=["Richard"];return s}
 function makePlan3(){const s=makePlan1();s.Kadoya.K5=["bill"];s.Yellow.Y5=["Kai"];return s}
 function makePlan4(){const s=makePlan1();return s}
 function makePlan5(){
@@ -131,6 +131,23 @@ function makePlan5(){
   s.unassigned=[...newcomers];
   return s;
 }
+function validatePlan(name,s){
+  const all=[...s.unassigned];
+  for(const h of Object.keys(houses)) for(const r of houses[h].rooms) all.push(...s[h][r.id]);
+  const missing=everyone.filter(p=>!all.includes(p));
+  const duplicates=everyone.filter(p=>all.filter(x=>x===p).length>1);
+  const extras=all.filter(p=>!everyone.includes(p));
+  if(all.length!==everyone.length||missing.length||duplicates.length||extras.length){
+    console.error("方案資料異常",name,{count:all.length,missing,duplicates:[...new Set(duplicates)],extras});
+    return false;
+  }
+  return true;
+}
+validatePlan("方案一",makePlan1());
+validatePlan("方案二",makePlan2());
+validatePlan("方案三",makePlan3());
+validatePlan("方案四",makePlan4());
+validatePlan("方案五",makePlan5());
 let current=makePlan1(),dragging=null,selectedPerson=null;
 function housePeople(h){return Object.values(current[h]).flat().length}
 function locate(person){if(current.unassigned.includes(person))return{kind:"unassigned"};for(const h of Object.keys(houses))for(const r of houses[h].rooms)if(current[h][r.id].includes(person))return{kind:"room",house:h,room:r.id};return null}
