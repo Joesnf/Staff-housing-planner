@@ -33,6 +33,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
 .person.single{background:#eaf3ff;border-color:#9ec5ff}
 .person.flexible{background:#fff1df;border-color:#f2b36b}
 .person.fixed{background:#e9f7ef;border-color:#8bc7a2;font-weight:650}
+.person.selected{outline:3px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 2px #fff}
 .hk-badge{display:inline-block;margin-left:3px;padding:1px 3px;border-radius:4px;background:#111827;color:#fff;font-size:clamp(8px,.65vw,11px);font-weight:800;line-height:1}
 .f-badge{display:inline-block;margin-left:3px;padding:1px 3px;border-radius:4px;background:#db2777;color:#fff;font-size:clamp(8px,.65vw,11px);font-weight:800;line-height:1}
 .unassigned-wrap{margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px}
@@ -48,6 +49,10 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
 }
 @media(max-width:680px){
   .wrap{padding:8px}
+  .room{cursor:pointer}
+  .room:active{background:#e8f0ff}
+  .person{touch-action:manipulation}
+  .sub{font-weight:600}
   h1{font-size:24px}
   .sub{font-size:14px}
   button{font-size:13px;padding:7px 9px}
@@ -67,7 +72,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
   <div class="top">
     <div>
       <h1>宿舍配置總覽｜四方案</h1>
-      <div class="sub">四棟宿舍一眼查看；可拖拉比較四個方案。</div>
+      <div class="sub">電腦可拖拉；手機請先點人名，再點目標房間。</div>
     </div>
     <div class="toolbar">
       <button onclick="loadPlan1()">方案一｜原配置</button>
@@ -114,7 +119,7 @@ function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori
 function makePlan2(){const s=makePlan1();s.Yellow.Y6=[];s.Momiji.MO5=["Richard"];return s}
 function makePlan3(){const s=makePlan1();s.Kadoya.K5=["bill"];s.Yellow.Y5=["Kai"];return s}
 function makePlan4(){const s=makePlan1();s.Kadoya.K1=["珊"];s.Momiji.MO5=["Lina"];return s}
-let current=makePlan1(),dragging=null;
+let current=makePlan1(),dragging=null,selectedPerson=null;
 function housePeople(h){return Object.values(current[h]).flat().length}
 function locate(person){if(current.unassigned.includes(person))return{kind:"unassigned"};for(const h of Object.keys(houses))for(const r of houses[h].rooms)if(current[h][r.id].includes(person))return{kind:"room",house:h,room:r.id};return null}
 function removePerson(person){const loc=locate(person);if(!loc)return;if(loc.kind==="unassigned")current.unassigned=current.unassigned.filter(x=>x!==person);else current[loc.house][loc.room]=current[loc.house][loc.room].filter(x=>x!==person)}
@@ -145,7 +150,16 @@ function personEl(person){
  p.className=cls;p.draggable=true;
  p.innerHTML="<span>"+person+(hkPeople.has(person)?' <span class="hk-badge">HK</span>':'')+(femalePeople.has(person)?' <span class="f-badge">F</span>':'')+"</span>";
  if(fixedPairs[person])p.title="固定同房："+fixedPairs[person]+"（拖動會一起移動）";else if(flexiblePairPeople.has(person))p.title="原本雙人配置，但可以拆開";else p.title="可自由移動";
- p.addEventListener("dragstart",()=>dragging=person);return p
+ p.addEventListener("dragstart",()=>dragging=person);
+ p.addEventListener("click",e=>{
+   if(window.matchMedia("(pointer: coarse)").matches){
+     e.stopPropagation();
+     selectedPerson = (selectedPerson===person ? null : person);
+     render();
+   }
+ });
+ if(selectedPerson===person)p.classList.add("selected");
+ return p
 }
 function render(){
  const grid=document.getElementById("grid"),summary=document.getElementById("summary"),unassigned=document.getElementById("unassigned");
@@ -158,18 +172,36 @@ function render(){
   for(const r of info.rooms){
    const room=document.createElement("div");room.className="room";const rc=current[h][r.id].length;
    room.innerHTML='<div class="room-head"><span class="room-title">'+r.label+'</span><span class="room-type">· '+r.type+" · "+rc+'人</span></div><div class="people"></div>';
-   room.addEventListener("dragover",e=>{e.preventDefault();room.classList.add("dragover")});room.addEventListener("dragleave",()=>room.classList.remove("dragover"));room.addEventListener("drop",e=>{e.preventDefault();room.classList.remove("dragover");if(dragging){moveToRoom(dragging,h,r.id);dragging=null}});
+   room.addEventListener("dragover",e=>{e.preventDefault();room.classList.add("dragover")});
+   room.addEventListener("dragleave",()=>room.classList.remove("dragover"));
+   room.addEventListener("drop",e=>{e.preventDefault();room.classList.remove("dragover");if(dragging){moveToRoom(dragging,h,r.id);dragging=null}});
+   room.addEventListener("click",()=>{
+     if(selectedPerson && window.matchMedia("(pointer: coarse)").matches){
+       const p=selectedPerson;
+       selectedPerson=null;
+       moveToRoom(p,h,r.id);
+     }
+   });
    const people=room.querySelector(".people");current[h][r.id].forEach(person=>people.appendChild(personEl(person)));roomsEl.appendChild(room)
   }
  }
- unassigned.addEventListener("dragover",e=>{e.preventDefault();unassigned.classList.add("dragover")});unassigned.addEventListener("dragleave",()=>unassigned.classList.remove("dragover"));unassigned.addEventListener("drop",e=>{e.preventDefault();unassigned.classList.remove("dragover");if(dragging){moveToUnassigned(dragging);dragging=null}});
+ unassigned.addEventListener("dragover",e=>{e.preventDefault();unassigned.classList.add("dragover")});
+ unassigned.addEventListener("dragleave",()=>unassigned.classList.remove("dragover"));
+ unassigned.addEventListener("drop",e=>{e.preventDefault();unassigned.classList.remove("dragover");if(dragging){moveToUnassigned(dragging);dragging=null}});
+ unassigned.addEventListener("click",()=>{
+   if(selectedPerson && window.matchMedia("(pointer: coarse)").matches){
+     const p=selectedPerson;
+     selectedPerson=null;
+     moveToUnassigned(p);
+   }
+ });
  current.unassigned.forEach(person=>unassigned.appendChild(personEl(person)))
 }
-function loadPlan1(){current=makePlan1();render()}
-function loadPlan2(){current=makePlan2();render()}
-function loadPlan3(){current=makePlan3();render()}
-function loadPlan4(){current=makePlan4();render()}
-function clearRooms(){current=emptyState();current.unassigned=[...everyone];render()}
+function loadPlan1(){selectedPerson=null;current=makePlan1();render()}
+function loadPlan2(){selectedPerson=null;current=makePlan2();render()}
+function loadPlan3(){selectedPerson=null;current=makePlan3();render()}
+function loadPlan4(){selectedPerson=null;current=makePlan4();render()}
+function clearRooms(){selectedPerson=null;current=emptyState();current.unassigned=[...everyone];render()}
 function saveNow(){localStorage.setItem("dormCompactConfig25",JSON.stringify(current));alert("已儲存")}
 function loadSaved(){const s=localStorage.getItem("dormCompactConfig25");if(!s){alert("沒有已儲存配置");return}current=JSON.parse(s);render()}
 render();
