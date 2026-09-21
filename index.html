@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>宿舍配置總覽｜四方案</title>
+<title>宿舍配置總覽｜五方案</title>
 <style>
 :root{--bg:#f4f6f8;--card:#fff;--line:#d9dee7;--text:#1f2937;--muted:#6b7280;--ok:#166534;--warn:#b91c1c;--accent:#2563eb;--soft:#eef4ff}
 *{box-sizing:border-box}
@@ -79,6 +79,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
       <button onclick="loadPlan2()">方案二｜廣東話平均</button>
       <button onclick="loadPlan3()">方案三｜Kai → Yellow</button>
       <button onclick="loadPlan4()">方案四｜Kadoya 5 人</button>
+      <button onclick="loadPlan5()">方案五｜舊人不動</button>
       <button onclick="clearRooms()">全部未分配</button>
     </div>
   </div>
@@ -117,6 +118,19 @@ function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori
 function makePlan2(){const s=makePlan1();s.Yellow.Y6=[];s.Momiji.MO5=["Richard"];return s}
 function makePlan3(){const s=makePlan1();s.Kadoya.K5=["bill"];s.Yellow.Y5=["Kai"];return s}
 function makePlan4(){const s=makePlan1();s.Kadoya.K1=["珊"];s.Momiji.MO5=["Lina"];return s}
+function makePlan5(){
+  const s=makePlan1();
+  const newcomers=["Ryan","鉦傑","珊","Richard"];
+  for(const person of newcomers){
+    for(const h of Object.keys(houses)){
+      for(const r of houses[h].rooms){
+        s[h][r.id]=s[h][r.id].filter(x=>x!==person);
+      }
+    }
+  }
+  s.unassigned=[...newcomers];
+  return s;
+}
 let current=makePlan1(),dragging=null,selectedPerson=null;
 function housePeople(h){return Object.values(current[h]).flat().length}
 function locate(person){if(current.unassigned.includes(person))return{kind:"unassigned"};for(const h of Object.keys(houses))for(const r of houses[h].rooms)if(current[h][r.id].includes(person))return{kind:"room",house:h,room:r.id};return null}
@@ -199,6 +213,7 @@ function loadPlan1(){selectedPerson=null;current=makePlan1();render()}
 function loadPlan2(){selectedPerson=null;current=makePlan2();render()}
 function loadPlan3(){selectedPerson=null;current=makePlan3();render()}
 function loadPlan4(){selectedPerson=null;current=makePlan4();render()}
+function loadPlan5(){selectedPerson=null;current=makePlan5();render()}
 function clearRooms(){selectedPerson=null;current=emptyState();current.unassigned=[...everyone];render()}
 render();
 </script>
