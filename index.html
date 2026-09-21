@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>宿舍配置總覽｜四方案</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--line:#d9dee7;--text:#1f2937;--muted:#6b7280;--ok:#166534;--warn:#b91c1c;--accent:#2563eb;--soft:#eef4ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;color:var(--text)}
+.wrap{width:100%;max-width:none;margin:0;padding:6px}
+.top{display:flex;justify-content:space-between;gap:6px;align-items:flex-end;flex-wrap:wrap;margin-bottom:6px}
+h1{margin:0;font-size:19px}.sub{color:var(--muted);font-size:12px;margin-top:2px}
+.toolbar{display:flex;gap:3px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 7px;cursor:pointer;font-size:11px;font-weight:650}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:4px}
+.sum{background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.sum b{font-size:14px}.sum span{font-size:11px;color:var(--muted);margin-left:5px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:2px;overflow-x:auto;align-items:start}
+.house{background:#fff;border:1px solid var(--line);border-radius:5px;overflow:hidden;min-width:220px}
+.house.over{border:2px solid var(--warn)}
+.house-head{padding:5px 6px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:3px;align-items:center}
+.house-name{font-size:14px;font-weight:800}
+.house-meta{font-size:10px;color:var(--muted);text-align:right}
+.rooms{display:grid;grid-template-columns:1fr;gap:2px;padding:3px}
+.room{border:1px dashed #bec6d1;border-radius:4px;background:#fafbfc;padding:2px 3px;min-height:30px}
+.room.dragover{background:var(--soft);border-color:var(--accent)}
+.room-head{display:flex;justify-content:flex-start;gap:4px;align-items:center;margin-bottom:2px;flex-wrap:wrap}
+.room-title{font-size:10px;font-weight:750}
+.room-type{font-size:9px;color:#64748b}
+.people{display:flex;flex-wrap:wrap;gap:2px;align-items:center}
+.person{background:#fff;border:1px solid #cfd6df;border-radius:999px;padding:2px 5px;cursor:grab;font-size:10px;line-height:1.05;white-space:nowrap}
+.person.single{background:#eaf3ff;border-color:#9ec5ff}
+.person.flexible{background:#fff1df;border-color:#f2b36b}
+.person.fixed{background:#e9f7ef;border-color:#8bc7a2;font-weight:650}
+.hk-badge{display:inline-block;margin-left:3px;padding:1px 3px;border-radius:4px;background:#111827;color:#fff;font-size:8px;font-weight:800;line-height:1}
+.f-badge{display:inline-block;margin-left:3px;padding:1px 3px;border-radius:4px;background:#db2777;color:#fff;font-size:8px;font-weight:800;line-height:1}
+.unassigned-wrap{margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px}
+.unassigned-title{font-size:12px;font-weight:700;margin-bottom:5px}
+.unassigned{min-height:30px;border:1px dashed #bec6d1;border-radius:5px;padding:3px;display:flex;flex-wrap:wrap;gap:2px}
+.legend{margin-top:4px;font-size:10px;color:#64748b;display:flex;gap:7px;flex-wrap:wrap}
+.bad{color:var(--warn);font-weight:700}
+@media(max-width:680px){.summary{grid-template-columns:repeat(4,minmax(150px,1fr));overflow-x:auto}.grid{grid-template-columns:repeat(4,220px)}.wrap{padding:6px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>宿舍配置總覽｜四方案</h1>
+      <div class="sub">四棟宿舍一眼查看；可拖拉比較四個方案。</div>
+    </div>
+    <div class="toolbar">
+      <button onclick="loadPlan1()">方案一｜原配置</button>
+      <button onclick="loadPlan2()">方案二｜廣東話平均</button>
+      <button onclick="loadPlan3()">方案三｜Kai → Yellow</button>
+      <button onclick="loadPlan4()">方案四｜Kadoya 5 人</button>
+      <button onclick="clearRooms()">全部未分配</button>
+      <button onclick="saveNow()">儲存</button>
+      <button onclick="loadSaved()">讀取</button>
+    </div>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="grid" id="grid"></div>
+  <div class="unassigned-wrap">
+    <div class="unassigned-title">未分配</div>
+    <div class="unassigned" id="unassigned"></div>
+  </div>
+  <div class="legend">
+    <span><b style="background:#e9f7ef;border:1px solid #8bc7a2;padding:2px 6px;border-radius:999px">固定同房</b> Annie/Jason、Mori/Tracy、Ray/Irene、Max/Anna</span>
+    <span><b style="background:#fff1df;border:1px solid #f2b36b;padding:2px 6px;border-radius:999px">可拆雙人</b> Lina、珊、Ryan、鉦傑</span>
+    <span><b style="background:#eaf3ff;border:1px solid #9ec5ff;padding:2px 6px;border-radius:999px">Single</b> 其餘可自由移動</span>
+    <span>單人房拖到已有人房間＝直接交換；雙人房＝直接加入</span>
+    <span><span class="hk-badge">HK</span> 香港成員</span>
+    <span><span class="f-badge">F</span> 女生</span>
+    <span><b>限制：</b>Richard 不可安排到 Kadoya</span>
+    <span><b>Kadoya：</b>只有一個洗手槽；方案四限制為 5 人。</span>
+  </div>
+</div>
+<script>
+const houses={
+Midori:{maxPeople:6,rooms:[{id:"M1",label:"R1",type:"雙人"},{id:"M2",label:"R2",type:"雙人"},{id:"M3",label:"R3",type:"彈性"},{id:"M4",label:"R4",type:"彈性"}]},
+Momiji:{maxPeople:7,rooms:[{id:"MO1",label:"R1",type:"雙人"},{id:"MO2",label:"R2",type:"雙人"},{id:"MO3",label:"R3",type:"單/雙"},{id:"MO4",label:"R4",type:"彈性"},{id:"MO5",label:"R5",type:"彈性"}]},
+Kadoya:{maxPeople:6,rooms:[{id:"K1",label:"R1",type:"雙人"},{id:"K2",label:"R2",type:"單人"},{id:"K3",label:"R3",type:"單人"},{id:"K4",label:"R4",type:"單人"},{id:"K5",label:"R5",type:"單人"}]},
+Yellow:{maxPeople:7,rooms:[{id:"Y1",label:"R1",type:"彈性"},{id:"Y2",label:"R2",type:"彈性"},{id:"Y3",label:"R3",type:"彈性"},{id:"Y4",label:"R4",type:"彈性"},{id:"Y5",label:"R5",type:"彈性"},{id:"Y6",label:"R6",type:"彈性"}]}
+};
+const fixedPairs={Annie:"Jason",Jason:"Annie",Mori:"Tracy",Tracy:"Mori",Ray:"Irene",Irene:"Ray",max:"anna",anna:"max"};
+const flexiblePairPeople=new Set(["Lina","珊","Ryan","鉦傑"]);
+const everyone=["Annie","Jason","Ann","Mori","Tracy","Sabrina","Niu","Zoey","Ray","Irene","Ryan","鉦傑","mark","isaac","Erica","Kai","Lina","珊","Tony","Keith","Joanna","max","anna","bill","Richard"];
+const hkPeople=new Set(["Mori","Tracy","mark","isaac","Richard","Keith","Tony"]);
+const femalePeople=new Set(["Annie","Tracy","Ann","Irene","Zoey","Lina","珊","Erica","Joanna","anna"]);
+const noKadoya=new Set(["Richard"]);
+function emptyState(){const s={unassigned:[]};for(const[h,info]of Object.entries(houses)){s[h]={};for(const r of info.rooms)s[h][r.id]=[]}return s}
+function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori.M2=["Mori","Tracy"];s.Midori.M3=["Ann"];s.Midori.M4=["Sabrina"];s.Momiji.MO1=["Ray","Irene"];s.Momiji.MO2=["Ryan","鉦傑"];s.Momiji.MO3=["Niu"];s.Momiji.MO4=["Zoey"];s.Kadoya.K1=["Lina","珊"];s.Kadoya.K2=["mark"];s.Kadoya.K3=["isaac"];s.Kadoya.K4=["Erica"];s.Kadoya.K5=["Kai"];s.Yellow.Y1=["max","anna"];s.Yellow.Y2=["Tony"];s.Yellow.Y3=["Keith"];s.Yellow.Y4=["Joanna"];s.Yellow.Y5=["bill"];s.Yellow.Y6=["Richard"];return s}
+function makePlan2(){const s=makePlan1();s.Yellow.Y6=[];s.Momiji.MO5=["Richard"];return s}
+function makePlan3(){const s=makePlan1();s.Kadoya.K5=["bill"];s.Yellow.Y5=["Kai"];return s}
+function makePlan4(){const s=makePlan1();s.Kadoya.K1=["珊"];s.Momiji.MO5=["Lina"];return s}
+let current=makePlan1(),dragging=null;
+function housePeople(h){return Object.values(current[h]).flat().length}
+function locate(person){if(current.unassigned.includes(person))return{kind:"unassigned"};for(const h of Object.keys(houses))for(const r of houses[h].rooms)if(current[h][r.id].includes(person))return{kind:"room",house:h,room:r.id};return null}
+function removePerson(person){const loc=locate(person);if(!loc)return;if(loc.kind==="unassigned")current.unassigned=current.unassigned.filter(x=>x!==person);else current[loc.house][loc.room]=current[loc.house][loc.room].filter(x=>x!==person)}
+function moveToRoom(person,h,room){
+ if(h==="Kadoya"&&noKadoya.has(person)){alert(person+" 不可安排到 Kadoya。");return}
+ const target=houses[h].rooms.find(r=>r.id===room),source=locate(person);
+ if(fixedPairs[person]){
+   const mate=fixedPairs[person];
+   if(h==="Kadoya"&&(noKadoya.has(person)||noKadoya.has(mate))){alert(person+" / "+mate+" 中有成員不可安排到 Kadoya。");return}
+   if(!(target&&target.type.includes("雙人"))){alert(person+" / "+mate+" 是固定同房組，請拖到雙人房。");return}
+   removePerson(person);removePerson(mate);current[h][room]=current[h][room].filter(x=>x!==person&&x!==mate);current[h][room].push(person,mate);render();return
+ }
+ const occupants=[...current[h][room]];
+ if(target&&target.type.includes("雙人")){removePerson(person);if(!current[h][room].includes(person))current[h][room].push(person);render();return}
+ if(occupants.length===1&&occupants[0]!==person){
+   const other=occupants[0];
+   if(fixedPairs[other]){alert(other+" / "+fixedPairs[other]+" 是固定同房組，不能拆開交換。");return}
+   if(source&&source.kind==="room"){current[source.house][source.room]=current[source.house][source.room].filter(x=>x!==person);current[h][room]=[person];current[source.house][source.room].push(other)}
+   else if(source&&source.kind==="unassigned"){current.unassigned=current.unassigned.filter(x=>x!==person);current[h][room]=[person];current.unassigned.push(other)}
+   render();return
+ }
+ removePerson(person);current[h][room].push(person);render()
+}
+function moveToUnassigned(person){if(fixedPairs[person]){const mate=fixedPairs[person];removePerson(person);removePerson(mate);current.unassigned.push(person,mate)}else{removePerson(person);current.unassigned.push(person)}render()}
+function personEl(person){
+ const p=document.createElement("span");let cls="person ";
+ if(fixedPairs[person])cls+="fixed";else if(flexiblePairPeople.has(person))cls+="flexible";else cls+="single";
+ p.className=cls;p.draggable=true;
+ p.innerHTML="<span>"+person+(hkPeople.has(person)?' <span class="hk-badge">HK</span>':'')+(femalePeople.has(person)?' <span class="f-badge">F</span>':'')+"</span>";
+ if(fixedPairs[person])p.title="固定同房："+fixedPairs[person]+"（拖動會一起移動）";else if(flexiblePairPeople.has(person))p.title="原本雙人配置，但可以拆開";else p.title="可自由移動";
+ p.addEventListener("dragstart",()=>dragging=person);return p
+}
+function render(){
+ const grid=document.getElementById("grid"),summary=document.getElementById("summary"),unassigned=document.getElementById("unassigned");
+ grid.innerHTML="";summary.innerHTML="";unassigned.innerHTML="";
+ for(const[h,info]of Object.entries(houses)){
+  const count=housePeople(h),over=count>info.maxPeople;
+  const s=document.createElement("div");s.className="sum";s.innerHTML="<b>"+h+" "+count+"/"+info.maxPeople+"</b><span>"+info.rooms.length+" rooms"+(over?' · <span class="bad">超額</span>':'')+"</span>";summary.appendChild(s);
+  const box=document.createElement("section");box.className="house"+(over?" over":"");box.innerHTML='<div class="house-head"><div class="house-name">'+h+'</div><div class="house-meta">'+count+"/"+info.maxPeople+" 人<br>"+info.rooms.length+' 房</div></div><div class="rooms"></div>';grid.appendChild(box);
+  const roomsEl=box.querySelector(".rooms");
+  for(const r of info.rooms){
+   const room=document.createElement("div");room.className="room";const rc=current[h][r.id].length;
+   room.innerHTML='<div class="room-head"><span class="room-title">'+r.label+'</span><span class="room-type">· '+r.type+" · "+rc+'人</span></div><div class="people"></div>';
+   room.addEventListener("dragover",e=>{e.preventDefault();room.classList.add("dragover")});room.addEventListener("dragleave",()=>room.classList.remove("dragover"));room.addEventListener("drop",e=>{e.preventDefault();room.classList.remove("dragover");if(dragging){moveToRoom(dragging,h,r.id);dragging=null}});
+   const people=room.querySelector(".people");current[h][r.id].forEach(person=>people.appendChild(personEl(person)));roomsEl.appendChild(room)
+  }
+ }
+ unassigned.addEventListener("dragover",e=>{e.preventDefault();unassigned.classList.add("dragover")});unassigned.addEventListener("dragleave",()=>unassigned.classList.remove("dragover"));unassigned.addEventListener("drop",e=>{e.preventDefault();unassigned.classList.remove("dragover");if(dragging){moveToUnassigned(dragging);dragging=null}});
+ current.unassigned.forEach(person=>unassigned.appendChild(personEl(person)))
+}
+function loadPlan1(){current=makePlan1();render()}
+function loadPlan2(){current=makePlan2();render()}
+function loadPlan3(){current=makePlan3();render()}
+function loadPlan4(){current=makePlan4();render()}
+function clearRooms(){current=emptyState();current.unassigned=[...everyone];render()}
+function saveNow(){localStorage.setItem("dormCompactConfig25",JSON.stringify(current));alert("已儲存")}
+function loadSaved(){const s=localStorage.getItem("dormCompactConfig25");if(!s){alert("沒有已儲存配置");return}current=JSON.parse(s);render()}
+render();
+</script>
+</body>
+</html>
