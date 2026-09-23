@@ -45,6 +45,19 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
 .rationale-title{font-size:clamp(14px,1vw,17px);font-weight:800;margin-bottom:4px}
 .rationale-text{font-size:clamp(12px,.9vw,15px);line-height:1.5;color:#374151}
 .rationale-text b{color:#111827}
+.decision-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:6px;margin-bottom:6px}
+.decision-card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.decision-card h2{font-size:clamp(14px,1vw,17px);margin:0 0 5px}
+.change-row{display:grid;grid-template-columns:minmax(95px,.7fr) 1fr 1.6fr;gap:6px;padding:5px 0;border-top:1px solid #edf0f4;font-size:clamp(12px,.9vw,15px);align-items:start}
+.change-row:first-of-type{border-top:0}
+.change-person{font-weight:800}
+.change-move{white-space:nowrap;color:#374151}
+.change-reason{color:#4b5563}
+.note-list{margin:0;padding-left:18px;font-size:clamp(12px,.9vw,15px);line-height:1.5;color:#374151}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 6px;font-size:11px;font-weight:700;margin-right:4px}
+.tag.hard{background:#eef6ff;border-color:#a7c7f5}
+.tag.check{background:#fff7ed;border-color:#fdba74}
+@media(max-width:760px){.decision-grid{grid-template-columns:1fr}.change-row{grid-template-columns:1fr}.change-move{white-space:normal}}
 @media(max-width:900px){
   .top{align-items:flex-start}
   .summary{grid-template-columns:repeat(4,minmax(165px,1fr));overflow-x:auto}
@@ -82,25 +95,48 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
       <button onclick="loadPlan4()">基準方案｜目前建議</button>
       <button onclick="loadPlan5()">參考 A｜新人未配置</button>
       <button onclick="loadPlan1()">參考 B｜舊人不動</button>
-      <button onclick="loadPlan2()">參考 C｜廣東話平均</button>
-      <button onclick="loadPlan3()">參考 D｜Kai → Yellow</button>
+      <button onclick="loadPlan2()">檢查 C｜廣東話平均</button>
+      <button onclick="loadPlan3()">檢查 D｜Kai → Yellow</button>
       <button onclick="clearRooms()">全部未分配</button>
     </div>
   </div>
-  <div class="rationale">
-    <div class="rationale-title">基準方案｜主要變動與待確認</div>
-    <div class="rationale-text">
-      <b>Kadoya 控制 5 人：</b>Kadoya 空間較小，而且只有一個洗手槽，這是目前最明確的硬條件之一。<br>
-      <b>Bill：Yellow → Momiji：</b>目前判斷 Bill 和 Yellow 的整體搭配感比較弱，因此移到 Momiji。<br>
-      <b>Niu：Momiji → Midori：</b>這是 Bill 進 Momiji 後帶出的連動調整；目前感覺 Niu 放在 Midori 會更適合，但需要確認是否已經先問過本人，以及舊人突然調整住宿的接受度。<br>
-      <b>Sabrina：Midori → Yellow：</b>補上 Bill 離開 Yellow 後的位置，也需要確認 Sabrina 對 Yellow 是否有明顯偏好或顧慮。<br>
-      <b>Lina 維持 Momiji：</b>目前沒有移動，但需要再評估這樣是否會持續強化 Lina 對 Zoey 的依賴；Niu / Lina 對調可以作為另一個檢查方向。<br>
-      <b>珊 → Kadoya：</b>珊是新安排進 Kadoya 的人，主要是配合 Kadoya 5 人結構與整體人數平衡。<br>
-      <b>Richard：</b>維持不進 Kadoya 的限制。<br>
-      <b>新人未配置參考：</b>參考 A 用來看原始基底與新人尚未配置時的狀態。Irene 雖然也是新人，但因為與 Ray 是固定同房組，所以直接跟 Ray 一起配置，不放進未分配。
+  <div class="decision-grid">
+    <div class="decision-card">
+      <h2>目前建議｜實際只動 3 人</h2>
+      <div class="change-row">
+        <div class="change-person">Bill</div>
+        <div class="change-move">Yellow → Momiji</div>
+        <div class="change-reason">目前判斷 Bill 和 Yellow 的搭配感較弱，因此優先移出 Yellow。<span class="tag check">理由待補強</span></div>
+      </div>
+      <div class="change-row">
+        <div class="change-person">Niu</div>
+        <div class="change-move">Momiji → Midori</div>
+        <div class="change-reason">Bill 進 Momiji 後帶出的連動調整；目前感覺 Niu 放 Midori 較適合。需先確認本人對舊人住宿變動的接受度。<span class="tag check">需確認本人</span></div>
+      </div>
+      <div class="change-row">
+        <div class="change-person">Sabrina</div>
+        <div class="change-move">Midori → Yellow</div>
+        <div class="change-reason">補上 Bill 離開 Yellow 後的位置，維持整體人數平衡。<span class="tag check">理由偏弱</span></div>
+      </div>
+    </div>
+    <div class="decision-card">
+      <h2>不動的關鍵理由</h2>
+      <ul class="note-list">
+        <li><span class="tag hard">硬條件</span><b>Kadoya 控制 5 人</b>：空間較小，且只有一個洗手槽。</li>
+        <li><span class="tag hard">營運</span><b>Lina 不去 Yellow</b>：Lina 要負責司機工作，留在宿舍區較容易掌握車輛動向，也能更快做臨時與彈性調整。</li>
+        <li><b>固定同房組不拆</b>：Annie/Jason、Mori/Tracy、Ray/Irene、Max/Anna。</li>
+        <li><b>Richard 不進 Kadoya</b>：維持目前限制。</li>
+        <li><b>Irene</b> 雖是新人，但因為和 Ray 是固定同房組，因此直接配置，不放進新人未配置。</li>
+      </ul>
     </div>
   </div>
-  <div class="summary" id="summary"></div>
+  <div class="rationale">
+    <div class="rationale-title">參考方案的用途</div>
+    <div class="rationale-text">
+      不把它們當成五套完全不同的方案，而是用來檢查少數變動是否值得：<b>新人未配置</b>看原始基底；<b>舊人不動</b>作為最低變動對照；<b>廣東話平均</b>檢查語言分布；<b>Kai → Yellow</b>檢查 Kai 的位置。
+    </div>
+  </div>
+    <div class="summary" id="summary"></div>
   <div class="grid" id="grid"></div>
   <div class="unassigned-wrap">
     <div class="unassigned-title">未分配</div>
@@ -114,7 +150,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
     <span><span class="hk-badge">HK</span> 香港成員</span>
     <span><span class="f-badge">F</span> 女生</span>
     <span><b>限制：</b>Richard 不可安排到 Kadoya</span>
-    <span><b>Kadoya：</b>只有一個洗手槽；方案四限制為 5 人。</span>
+    <span><b>Kadoya：</b>只有一個洗手槽；基準方案中 Kadoya 建議 5 人。</span>
   </div>
 </div>
 <script>
