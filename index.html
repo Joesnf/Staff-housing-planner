@@ -126,6 +126,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
         <li><span class="tag hard">營運</span><b>Lina 留 Momiji、不去 Yellow</b>：Lina 要負責司機工作，留在宿舍區較容易掌握車輛動向，也能更快做臨時與彈性調整。</li>
         <li><b>固定同房組不拆</b>：Annie/Jason、Mori/Tracy、Ray/Irene。</li>
         <li><b>Richard 不進 Kadoya</b>：主要是因為 Richard 與 Mark 之間曾有誤解或較差的第一印象，現階段避免安排在同一棟。</li>
+        <li><b>Richard 與珊不同房</b>：兩人不可安排在同一房間。</li>
         <li><b>珊</b>：目前先安排到 Yellow，主要是依可用空間與司機配置調整，沒有額外的人際理由。</li>
         <li><b>Joanna 移出今年配置</b>：因個人規劃，今年無法加入，因此不列入住宿安排。</li>
         <li><b>Anna 移出今年配置</b>：今年不會回來，因此不列入住宿安排。</li>
@@ -169,6 +170,7 @@ const everyone=["Annie","Jason","Ann","Mori","Tracy","Sabrina","Niu","Zoey","Ray
 const hkPeople=new Set(["Mori","Tracy","mark","isaac","Richard","Keith","Tony"]);
 const femalePeople=new Set(["Annie","Tracy","Ann","Irene","Zoey","Lina","珊","Erica","Sabrina"]);
 const noKadoya=new Set(["Richard"]);
+const incompatibleRoomPairs=[["Richard","珊"]];
 function emptyState(){const s={unassigned:[]};for(const[h,info]of Object.entries(houses)){s[h]={};for(const r of info.rooms)s[h][r.id]=[]}return s}
 function makePlan1(){const s=emptyState();s.Midori.M1=["Annie","Jason"];s.Midori.M2=["Mori","Tracy"];s.Midori.M3=["Ann"];s.Midori.M4=["Sabrina"];s.Momiji.MO1=["Ray","Irene"];s.Momiji.MO2=["Ryan","鉦傑"];s.Momiji.MO3=["Niu"];s.Momiji.MO4=["Zoey"];s.Momiji.MO5=["Lina"];s.Kadoya.K1=["珊"];s.Kadoya.K2=["mark"];s.Kadoya.K3=["isaac"];s.Kadoya.K4=["Erica"];s.Kadoya.K5=["Kai"];s.Yellow.Y1=["max"];s.Yellow.Y2=["Tony"];s.Yellow.Y3=["Keith"];s.Yellow.Y4=[];s.Yellow.Y5=["bill"];s.Yellow.Y6=["Richard"];return s}
 function makePlan2(){const s=makePlan1();s.Yellow.Y6=["Lina"];s.Momiji.MO5=["Richard"];return s}
@@ -176,11 +178,14 @@ function makePlan3(){const s=makePlan1();s.Kadoya.K5=["bill"];s.Yellow.Y5=["Kai"
 function makePlan4(){
   const s=makePlan1();
   s.Midori.M4=[];
+  s.Momiji.MO1=["max"];
   s.Momiji.MO3=["Niu"];
   s.Momiji.MO5=["Lina"];
   s.Kadoya.K1=["bill"];
+  s.Yellow.Y1=["Ray","Irene"];
+  s.Yellow.Y4=["珊"];
   s.Yellow.Y5=["Sabrina"];
-  s.Yellow.Y6=["Richard","珊"];
+  s.Yellow.Y6=["Richard"];
   return s
 }
 function makePlan5(){
@@ -219,6 +224,11 @@ function locate(person){if(current.unassigned.includes(person))return{kind:"unas
 function removePerson(person){const loc=locate(person);if(!loc)return;if(loc.kind==="unassigned")current.unassigned=current.unassigned.filter(x=>x!==person);else current[loc.house][loc.room]=current[loc.house][loc.room].filter(x=>x!==person)}
 function roomAllowsPair(room){return room && (room.type.includes("雙人") || room.type.includes("單/雙") || room.type.includes("彈性"))}
 function roomAllowsTwo(room){return roomAllowsPair(room)}
+function roomConflict(person,occupants){
+  return incompatibleRoomPairs.some(([a,b]) =>
+    (person===a && occupants.includes(b)) || (person===b && occupants.includes(a))
+  );
+}
 function moveToRoom(person,h,room){
  if(h==="Kadoya"&&noKadoya.has(person)){alert(person+" 不可安排到 Kadoya。");return}
  const target=houses[h].rooms.find(r=>r.id===room),source=locate(person);
@@ -226,9 +236,12 @@ function moveToRoom(person,h,room){
    const mate=fixedPairs[person];
    if(h==="Kadoya"&&(noKadoya.has(person)||noKadoya.has(mate))){alert(person+" / "+mate+" 中有成員不可安排到 Kadoya。");return}
    if(!roomAllowsPair(target)){alert(person+" / "+mate+" 是固定同房組，請拖到可容納雙人的房間。");return}
+   const targetOccupants=[...current[h][room]].filter(x=>x!==person&&x!==mate);
+   if(roomConflict(person,targetOccupants)||roomConflict(mate,targetOccupants)){alert("此固定同房組與該房現有人員不可同房。");return}
    removePerson(person);removePerson(mate);current[h][room]=current[h][room].filter(x=>x!==person&&x!==mate);current[h][room].push(person,mate);render();return
  }
  const occupants=[...current[h][room]];
+ if(roomConflict(person,occupants)){alert(person+" 與該房現有人員不可同房。");return}
  if(roomAllowsTwo(target)){removePerson(person);if(!current[h][room].includes(person))current[h][room].push(person);render();return}
  if(occupants.length===1&&occupants[0]!==person){
    const other=occupants[0];
