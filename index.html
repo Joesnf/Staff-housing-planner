@@ -149,7 +149,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
     <span><b style="background:#e9f7ef;border:1px solid #8bc7a2;padding:2px 6px;border-radius:999px">固定同房</b> Annie/Jason、Mori/Tracy、Ray/Irene、Max/Anna</span>
     <span><b style="background:#fff1df;border:1px solid #f2b36b;padding:2px 6px;border-radius:999px">可拆雙人</b> Lina、珊、Ryan、鉦傑</span>
     <span><b style="background:#eaf3ff;border:1px solid #9ec5ff;padding:2px 6px;border-radius:999px">Single</b> 其餘可自由移動</span>
-    <span>單人房拖到已有人房間＝直接交換；雙人房＝直接加入</span>
+    <span>單人房拖到已有人房間＝直接交換；雙人／單雙／彈性房可直接加入第 2 人</span>
     <span><span class="hk-badge">HK</span> 香港成員</span>
     <span><span class="f-badge">F</span> 女生</span>
     <span><b>限制：</b>Richard 不可安排到 Kadoya</span>
@@ -217,17 +217,19 @@ let current=makePlan4(),dragging=null,selectedPerson=null;
 function housePeople(h){return Object.values(current[h]).flat().length}
 function locate(person){if(current.unassigned.includes(person))return{kind:"unassigned"};for(const h of Object.keys(houses))for(const r of houses[h].rooms)if(current[h][r.id].includes(person))return{kind:"room",house:h,room:r.id};return null}
 function removePerson(person){const loc=locate(person);if(!loc)return;if(loc.kind==="unassigned")current.unassigned=current.unassigned.filter(x=>x!==person);else current[loc.house][loc.room]=current[loc.house][loc.room].filter(x=>x!==person)}
+function roomAllowsPair(room){return room && (room.type.includes("雙人") || room.type.includes("單/雙") || room.type.includes("彈性"))}
+function roomAllowsTwo(room){return roomAllowsPair(room)}
 function moveToRoom(person,h,room){
  if(h==="Kadoya"&&noKadoya.has(person)){alert(person+" 不可安排到 Kadoya。");return}
  const target=houses[h].rooms.find(r=>r.id===room),source=locate(person);
  if(fixedPairs[person]){
    const mate=fixedPairs[person];
    if(h==="Kadoya"&&(noKadoya.has(person)||noKadoya.has(mate))){alert(person+" / "+mate+" 中有成員不可安排到 Kadoya。");return}
-   if(!(target&&target.type.includes("雙人"))){alert(person+" / "+mate+" 是固定同房組，請拖到雙人房。");return}
+   if(!roomAllowsPair(target)){alert(person+" / "+mate+" 是固定同房組，請拖到可容納雙人的房間。");return}
    removePerson(person);removePerson(mate);current[h][room]=current[h][room].filter(x=>x!==person&&x!==mate);current[h][room].push(person,mate);render();return
  }
  const occupants=[...current[h][room]];
- if(target&&target.type.includes("雙人")){removePerson(person);if(!current[h][room].includes(person))current[h][room].push(person);render();return}
+ if(roomAllowsTwo(target)){removePerson(person);if(!current[h][room].includes(person))current[h][room].push(person);render();return}
  if(occupants.length===1&&occupants[0]!==person){
    const other=occupants[0];
    if(fixedPairs[other]){alert(other+" / "+fixedPairs[other]+" 是固定同房組，不能拆開交換。");return}
