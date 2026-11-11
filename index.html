@@ -98,6 +98,7 @@ button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6p
       <button onclick="loadPlan2()">檢查 C｜廣東話平均</button>
       <button onclick="loadPlan3()">檢查 D｜Kai → Yellow</button>
       <button onclick="clearRooms()">全部未分配</button>
+      <button onclick="resetCurrentPlan()">重設目前方案</button>
     </div>
   </div>
   <div class="decision-grid">
@@ -218,7 +219,22 @@ validatePlan("方案二",makePlan2());
 validatePlan("方案三",makePlan3());
 validatePlan("方案四",makePlan4());
 validatePlan("方案五",makePlan5());
-let current=makePlan4(),dragging=null,selectedPerson=null;
+const planFactories={
+  baseline:makePlan4,
+  refA:makePlan5,
+  refB:makePlan1,
+  refC:makePlan2,
+  refD:makePlan3
+};
+const planStates={
+  baseline:makePlan4(),
+  refA:makePlan5(),
+  refB:makePlan1(),
+  refC:makePlan2(),
+  refD:makePlan3()
+};
+let activePlan="baseline";
+let current=planStates[activePlan],dragging=null,selectedPerson=null;
 function housePeople(h){return Object.values(current[h]).flat().length}
 function locate(person){if(current.unassigned.includes(person))return{kind:"unassigned"};for(const h of Object.keys(houses))for(const r of houses[h].rooms)if(current[h][r.id].includes(person))return{kind:"room",house:h,room:r.id};return null}
 function removePerson(person){const loc=locate(person);if(!loc)return;if(loc.kind==="unassigned")current.unassigned=current.unassigned.filter(x=>x!==person);else current[loc.house][loc.room]=current[loc.house][loc.room].filter(x=>x!==person)}
@@ -306,12 +322,31 @@ function render(){
  });
  current.unassigned.forEach(person=>unassigned.appendChild(personEl(person)))
 }
-function loadPlan1(){selectedPerson=null;current=makePlan1();render()}
-function loadPlan2(){selectedPerson=null;current=makePlan2();render()}
-function loadPlan3(){selectedPerson=null;current=makePlan3();render()}
-function loadPlan4(){selectedPerson=null;current=makePlan4();render()}
-function loadPlan5(){selectedPerson=null;current=makePlan5();render()}
-function clearRooms(){selectedPerson=null;current=emptyState();current.unassigned=[...everyone];render()}
+function switchPlan(key){
+  selectedPerson=null;
+  activePlan=key;
+  current=planStates[key];
+  render();
+}
+function loadPlan1(){switchPlan("refB")}
+function loadPlan2(){switchPlan("refC")}
+function loadPlan3(){switchPlan("refD")}
+function loadPlan4(){switchPlan("baseline")}
+function loadPlan5(){switchPlan("refA")}
+function resetCurrentPlan(){
+  selectedPerson=null;
+  planStates[activePlan]=planFactories[activePlan]();
+  current=planStates[activePlan];
+  render()
+}
+function clearRooms(){
+  selectedPerson=null;
+  const cleared=emptyState();
+  cleared.unassigned=[...everyone];
+  planStates[activePlan]=cleared;
+  current=planStates[activePlan];
+  render()
+}
 render();
 </script>
 </body>
